@@ -3,7 +3,7 @@ name: Build ARM64 RealiTLScanner
 on:
   workflow_dispatch:  # 手动触发
   push:
-    branches: [ main ]  # 当主分支更新时自动构建
+    branches: [ main ]
 
 jobs:
   build:
@@ -18,10 +18,16 @@ jobs:
         with:
           go-version: '1.21'
 
+      - name: Verify dependencies
+        run: |
+          go mod tidy
+          go mod download
+
       - name: Build for ARM64 Linux
         run: |
           mkdir -p build
-          GOOS=linux GOARCH=arm64 go build -o build/RealiTLScanner-arm64 main.go
+          # ✅ 关键修正：必须编译整个模块，而不是单独 main.go
+          GOOS=linux GOARCH=arm64 go build -o build/RealiTLScanner-arm64 ./...
           ls -lh build/
 
       - name: Upload build artifact
